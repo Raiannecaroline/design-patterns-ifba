@@ -5,48 +5,129 @@ import util.DataUtil;
 import util.Modulo11;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class BancoBrasilCodigoBarras {
 
+    private static String calcularFatorVencimento(Date dataVencimento) {
+        if (dataVencimento == null) {
+            return "0000"; // Para boletos sem vencimento
+        }
+
+        // Data base fixa: 07/10/1997
+        Calendar dataBase = Calendar.getInstance();
+        dataBase.set(1997, Calendar.OCTOBER, 7, 0, 0, 0);
+        dataBase.set(Calendar.MILLISECOND, 0);
+
+        // Calcula diferença em dias
+        long diff = dataVencimento.getTime() - dataBase.getTimeInMillis();
+        long dias = diff / (24 * 60 * 60 * 1000);
+
+        // Limita a 4 dígitos (máximo 9999)
+        if (dias > 9999) {
+            dias = 9999; // Valor máximo permitido
+        } else if (dias < 0) {
+            dias = 0; // Data anterior à data base
+        }
+
+        return String.format("%04d", dias);
+    }
+
+    private static String formatarValor(BigDecimal valor) {
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Valor do boleto inválido");
+        }
+        return String.format("%010d", valor.multiply(new BigDecimal("100")).intValue());
+    }
+
     public static String gerarCodigoBarras(Boleto boleto) {
-        StringBuilder codigoBarras = new StringBuilder(44);
 
-        codigoBarras.append("001");
-        codigoBarras.append("9");
-        codigoBarras.append("0");
-        codigoBarras.append(DataUtil.calcularVencimento(boleto.getDataVencimento()));
-        codigoBarras.append(String.format("%010d", boleto.getValor().multiply(new BigDecimal("100")).intValue()));
-        codigoBarras.append(gerarCampoLivre(boleto));
+        try {
+            // Validação inicial
+            if (boleto == null) {
+                throw new IllegalArgumentException("Boleto não pode ser nulo");
+            }
 
-        int dv = Modulo11.calcular(codigoBarras.toString());
-        codigoBarras.setCharAt(4, Character.forDigit(dv, 10));
+            // Geração dos componentes
+            String fatorVencimento = calcularFatorVencimento(boleto.getDataVencimento());
+            String valorFormatado = formatarValor(boleto.getValor());
+            String campoLivre = gerarCampoLivre(boleto);
 
-        return codigoBarras.toString();
+            // Verificação dos tamanhos
+            if (fatorVencimento.length() != 4 ||
+                    valorFormatado.length() != 10 ||
+                    campoLivre.length() != 25) {
+                throw new IllegalStateException("Componentes com tamanhos inválidos: " +
+                        "Vencimento=" + fatorVencimento.length() + ", " +
+                        "Valor=" + valorFormatado.length() + ", " +
+                        "CampoLivre=" + campoLivre.length());
+            }
+
+            // Montagem do código
+            StringBuilder codigo = new StringBuilder()
+                    .append("001")   // Código do banco
+                    .append("9")     // Código da moeda
+                    .append("0")     // DV provisório
+                    .append(fatorVencimento)
+                    .append(valorFormatado)
+                    .append(campoLivre);
+
+            // Cálculo do dígito verificador
+            int dv = Modulo11.calcular(codigo.toString());
+            codigo.setCharAt(4, Character.forDigit(dv, 10));
+
+            String codigoFinal = codigo.toString();
+
+            if (codigoFinal.length() != 44) {
+                throw new IllegalStateException("Código final com tamanho inválido: " + codigoFinal.length());
+            }
+
+            return codigoFinal;
+
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Erro ao gerar código de barras: " + e.getMessage(), e);
+        }
+
     }
 
     public static String gerarCampoLivre(Boleto boleto) {
-        StringBuilder campoLivre = new StringBuilder(25);
+//        StringBuilder campoLivre = new StringBuilder(25);
 
-        campoLivre.append(String.format("%02d", Integer.parseInt(boleto.getCarteira())));
-
-        String nossoNumero = boleto.getNossoNumero().replaceAll("[^0-9]", "");
-        campoLivre.append(String.format("%011d", Long.parseLong(nossoNumero)));
-
-        campoLivre.append(boleto.getAgencia());
-
-        String conta = boleto.getContaCorrente().replaceAll("[^0-9]", "");
-        campoLivre.append(String.format("%08d", Long.parseLong(conta)));
-
-        if (!conta.isEmpty()) {
-            campoLivre.append(conta.charAt(conta.length() - 1));
-        } else {
-            campoLivre.append("0");
+        if (boleto.getCarteira() == null || boleto.getNossoNumero() == null ||
+                boleto.getAgencia() == null || boleto.getContaCorrente() == null) {
+            throw new IllegalArgumentException("Dados incompletos para gerar campo livre");
         }
 
-        while (campoLivre.length() < 25) {
-            campoLivre.append("0");
+        // 1. Formatar cada componente individualmente
+        String carteira = String.format("%02d", Integer.parseInt(boleto.getCarteira().replaceAll("[^0-9]", "")));
+        String nossoNumero = String.format("%011d", Long.parseLong(boleto.getNossoNumero().replaceAll("[^0-9]", "")));
+        String agencia = boleto.getAgencia().replaceAll("[^0-9]", "");
+
+        // 2. Extrair conta e DAC
+        String contaCompleta = boleto.getContaCorrente().replaceAll("[^0-9]", "");
+        String conta = contaCompleta.length() >= 7 ?
+                contaCompleta.substring(0, 7) :
+                String.format("%07d", Long.parseLong(contaCompleta));
+        char dac = contaCompleta.isEmpty() ? '0' : contaCompleta.charAt(contaCompleta.length() - 1);
+
+        // 3. Montar campo livre
+        String campoLivre = carteira + nossoNumero + agencia + conta + dac;
+
+        // Debug detalhado
+        System.out.println("\nDebug Campo Livre:");
+        System.out.println("Carteira (2): " + carteira);
+        System.out.println("Nosso Número (11): " + nossoNumero);
+        System.out.println("Agência (4): " + agencia);
+        System.out.println("Conta (7): " + conta);
+        System.out.println("DAC (1): " + dac);
+        System.out.println("TOTAL: " + campoLivre.length() + " dígitos");
+
+        if (campoLivre.length() != 25) {
+            throw new IllegalStateException("Campo livre inválido. Esperado 25 dígitos, obtido " + campoLivre.length());
         }
 
-        return campoLivre.substring(0, 25);
+        return campoLivre;
     }
 }

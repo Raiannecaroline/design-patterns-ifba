@@ -108,10 +108,25 @@ public class BancoBrasilBuilder implements BoletoBuilder {
     public Boleto construirBoleto() {
         validarDados();
 
-        this.boleto.setCodigoBarras(BancoBrasilCodigoBarras.gerarCodigoBarras(this.boleto));
-        this.boleto.setLinhaDigitavel(BancoBrasilLinhaDigitavel.gerarLinhaDigitavel(this.boleto.getCodigoBarras()));
+        try {
+            String codigoBarras = BancoBrasilCodigoBarras.gerarCodigoBarras(this.boleto);
+            if (codigoBarras == null || codigoBarras.length() != 44) {
+                throw new IllegalArgumentException("Falha ao gerar o código de barras");
+            }
 
-        return this.boleto;
+            String linhaDigitavel = BancoBrasilLinhaDigitavel.gerarLinhaDigitavel(codigoBarras);
+            if (linhaDigitavel == null || linhaDigitavel.length() < 47) {
+                throw new IllegalArgumentException("Falha ao gerar a linha digitável");
+            }
+
+            this.boleto.setCodigoBarras(codigoBarras);
+            this.boleto.setLinhaDigitavel(linhaDigitavel);
+
+            return this.boleto;
+
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Erro ao gerar o código de barras: " + e.getMessage(), e);
+        }
 
     }
 
@@ -140,9 +155,18 @@ public class BancoBrasilBuilder implements BoletoBuilder {
             throw new IllegalArgumentException("Conta corrente não foi informada");
         }
 
-        if (boleto.getCarteira() == null || boleto.getCarteira().matches("\\d{2}")) {
-            throw new IllegalArgumentException("Carteira deve ter 2 digitos");
+        if (boleto.getCarteira() == null || boleto.getCarteira().isEmpty()) {
+            throw new IllegalArgumentException("Carteira não informada");
         }
+
+        String carteiraLimpa = boleto.getCarteira().replaceAll("[^0-9]", "");
+
+        if (carteiraLimpa.length() != 2) {
+            throw new IllegalArgumentException
+                    ("Carteira deve conter exatamente 2 digitos númericos: " + boleto.getCarteira());
+        }
+
+        boleto.setCarteira(carteiraLimpa);
 
         if (boleto.getNossoNumero() == null || boleto.getNossoNumero().isEmpty()) {
             throw new IllegalArgumentException("Nosso número não informado");
