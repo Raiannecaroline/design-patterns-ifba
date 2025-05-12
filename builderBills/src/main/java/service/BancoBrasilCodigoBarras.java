@@ -5,35 +5,10 @@ import util.DataUtil;
 import util.Modulo11;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 public class BancoBrasilCodigoBarras {
 
-    private static String calcularFatorVencimento(Date dataVencimento) {
-        if (dataVencimento == null) {
-            return "0000"; // Para boletos sem vencimento
-        }
 
-        // Data base fixa: 07/10/1997
-        Calendar dataBase = Calendar.getInstance();
-        dataBase.set(1997, Calendar.OCTOBER, 7, 0, 0, 0);
-        dataBase.set(Calendar.MILLISECOND, 0);
-
-        // Calcula diferença em dias
-        long diff = dataVencimento.getTime() - dataBase.getTimeInMillis();
-        long dias = diff / (24 * 60 * 60 * 1000);
-
-        // Limita a 4 dígitos (máximo 9999)
-        if (dias > 9999) {
-            dias = 9999; // Valor máximo permitido
-        } else if (dias < 0) {
-            dias = 0; // Data anterior à data base
-        }
-
-        return String.format("%04d", dias);
-    }
 
     private static String formatarValor(BigDecimal valor) {
         if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
@@ -51,7 +26,7 @@ public class BancoBrasilCodigoBarras {
             }
 
             // Geração dos componentes
-            String fatorVencimento = calcularFatorVencimento(boleto.getDataVencimento());
+            String fatorVencimento = DataUtil.calcularFatorVencimento(boleto.getDataVencimento());
             String valorFormatado = formatarValor(boleto.getValor());
             String campoLivre = gerarCampoLivre(boleto);
 
@@ -93,7 +68,6 @@ public class BancoBrasilCodigoBarras {
     }
 
     public static String gerarCampoLivre(Boleto boleto) {
-//        StringBuilder campoLivre = new StringBuilder(25);
 
         if (boleto.getCarteira() == null || boleto.getNossoNumero() == null ||
                 boleto.getAgencia() == null || boleto.getContaCorrente() == null) {
