@@ -4,6 +4,8 @@ package builder;
 import model.Beneficiario;
 import model.Boleto;
 import model.Sacado;
+import service.BancoBrasilCodigoBarras;
+import service.BancoBrasilLinhaDigitavel;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -102,11 +104,16 @@ public class BancoBrasilBuilder implements BoletoBuilder {
         return this;
     }
 
-//    @Override
-//    public Boleto construirBoleto() {
-//        validarDados();
-//
-//    }
+    @Override
+    public Boleto construirBoleto() {
+        validarDados();
+
+        this.boleto.setCodigoBarras(BancoBrasilCodigoBarras.gerarCodigoBarras(this.boleto));
+        this.boleto.setLinhaDigitavel(BancoBrasilLinhaDigitavel.gerarLinhaDigitavel(this.boleto.getCodigoBarras()));
+
+        return this.boleto;
+
+    }
 
     private void validarDados() {
         if (boleto.getBeneficiario() == null) {

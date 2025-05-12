@@ -9,7 +9,7 @@ public interface BoletoBuilder {
 
     BoletoBuilder comBeneficiario(String nome, String documento, String endereco);
     BoletoBuilder comSacado(String nome, String documento, String endereco);
-    BoletoBuilder comDocumento(String numero, String data);
+    BoletoBuilder comDocumento(String numero, Date data);
     BoletoBuilder comVencimento(Date data);
     BoletoBuilder comValor(BigDecimal valor);
     BoletoBuilder comInstrucoes(String instrucoes);
