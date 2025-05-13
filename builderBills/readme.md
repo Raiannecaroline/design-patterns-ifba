@@ -112,6 +112,61 @@ Boleto boleto = new BradescoBuilder()
         .construirBoleto();
 ```
 
+### 🔄 **Dados para inserir (Via terminal - Após Escolher o Menu)**
+
+**Dados Comuns de serem Inseridos:**
+```shell
+Beneficiário (Nome): Loja do Zé Ltda
+Beneficiário (CNPJ/CPF): 12.345.678/0001-99
+Beneficiário (Endereço): Rua das Flores, 123 - Centro - São Paulo/SP
+
+Sacado (Nome): João da Silva
+Sacado (CNPJ/CPF): 123.456.789-09
+Sacado (Endereço): Av. Paulista, 1000 - Bela Vista - São Paulo/SP
+
+Número do Documento: 20230001
+Data Vencimento (dd/MM/yyyy): 30/12/2023
+Valor: 350.50
+```
+**Dados Específicos de cada Banco:**
+
+1. Banco do Brasil (001):
+```shell
+Agência: 1234
+Conta Corrente: 123456-7
+Carteira: 17
+Nosso Número: 87654321
+```
+
+2. Itaú (341):
+```shell
+Agência: 1234
+Conta Corrente: 12345
+Carteira: 109
+Nosso Número: 12345678
+```
+
+*Algumas regras do Layout do Itaú:*
+
+- A conta corrente deve ter 5 dígitos
+- A carteira normalmente é 109, 174 ou 175
+- Nosso número deve ter 8 dígitos
+
+
+3. Bradesco (237):
+```shell
+Agência: 1234
+Conta Corrente: 1234567
+Carteira: 09
+Nosso Número: 12345678901
+```
+
+*Algumas regras do Layout do Bradesco:*
+
+- A conta corrente deve ter 7 dígitos
+- Carteira normalmente é 09, 19 ou 27
+- Nosso número deve ter 11 dígitos
+
 ## 📦 **4. Dependências**
 
 **pom.xml (Maven)**
