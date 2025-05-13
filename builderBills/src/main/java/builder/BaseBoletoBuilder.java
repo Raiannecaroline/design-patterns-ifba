@@ -109,26 +109,6 @@ public abstract class BaseBoletoBuilder implements BoletoBuilder {
         validarDadosComuns();
         validarDadosEspecificos();
 
-//        try {
-//            String codigoBarras = BancoBrasilCodigoBarras.gerarCodigoBarras(this.boleto);
-//            if (codigoBarras == null || codigoBarras.length() != 44) {
-//                throw new IllegalArgumentException("Falha ao gerar o código de barras");
-//            }
-//
-//            String linhaDigitavel = BancoBrasilLinhaDigitavel.gerarLinhaDigitavel(codigoBarras);
-//            if (linhaDigitavel == null || linhaDigitavel.length() < 47) {
-//                throw new IllegalArgumentException("Falha ao gerar a linha digitável");
-//            }
-//
-//            this.boleto.setCodigoBarras(codigoBarras);
-//            this.boleto.setLinhaDigitavel(linhaDigitavel);
-//
-//            return this.boleto;
-//
-//        } catch (Exception e) {
-//            throw new IllegalArgumentException("Erro ao gerar o código de barras: " + e.getMessage(), e);
-//        }
-
         String codigoBarras = CodigoBarrasService.gerarCodigoBarras(
                 boleto.getBanco(),
                 boleto.getDataVencimento(),
