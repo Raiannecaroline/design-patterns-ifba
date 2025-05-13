@@ -242,3 +242,5 @@ Principais melhorias:
 5. Links e referências mais explícitos
 6. Mantido todo o conteúdo original em markdown válido
 
+## *Link do vídeo:* https://youtu.be/7Dw9lNdWWiM
+
