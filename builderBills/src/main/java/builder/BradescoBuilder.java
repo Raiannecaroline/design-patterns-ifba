@@ -1,9 +1,11 @@
 package builder;
 
-public class BancoBrasilBuilder extends BaseBoletoBuilder {
+import util.Modulo11;
 
-    public BancoBrasilBuilder() {
-        super("001");
+public class BradescoBuilder extends BaseBoletoBuilder {
+
+    public BradescoBuilder() {
+        super("237");
     }
 
     @Override
@@ -36,19 +38,28 @@ public class BancoBrasilBuilder extends BaseBoletoBuilder {
 
     @Override
     protected String gerarCampoLivre() {
+        String agencia = formatarNumero(boleto.getAgencia(), 4);
         String carteira = formatarNumero(boleto.getCarteira(), 2);
         String nossoNumero = formatarNumero(boleto.getNossoNumero(), 11);
-        String agencia = formatarNumero(boleto.getAgencia(), 4);
         String conta = formatarNumero(boleto.getContaCorrente(), 7);
-        String dac = "0"; // DAC padrão para Banco do Brasil
 
-        return carteira + nossoNumero + agencia + conta + dac;
+        String bloco = agencia + carteira + nossoNumero + conta;
+        String dac = String.valueOf(Modulo11.calcular(bloco));
+
+        // Montagem do campo livre
+        String campoLivre = agencia + carteira + nossoNumero + conta + dac;
+
+        // Verificação do tamanho
+        if (campoLivre.length() != 25) {
+            throw new IllegalStateException("Campo livre do Bradesco deve ter 25 dígitos. Gerado: " + campoLivre.length());
+        }
+
+        return campoLivre;
     }
 
     private String formatarNumero(String valor, int tamanho) {
         String apenasDigitos = valor.replaceAll("[^0-9]", "");
         return String.format("%" + tamanho + "s", apenasDigitos).replace(' ', '0');
     }
-
 
 }

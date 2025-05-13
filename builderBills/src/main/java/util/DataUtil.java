@@ -22,7 +22,6 @@ public class DataUtil {
 
         // Limita a 4 dígitos (0-9999)
         diffDias = Math.max(0, Math.min(diffDias, 9999));
-
         return String.format("%04d", diffDias);
     }
 

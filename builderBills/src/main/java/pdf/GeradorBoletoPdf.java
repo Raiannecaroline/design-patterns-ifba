@@ -34,20 +34,55 @@ public class GeradorBoletoPdf {
         table.setWidths(new float[]{1, 3});
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        addCell(table, "Banco:", getNomeBanco(boleto.getBanco()), true);
         addCell(table, "Vencimento:", sdf.format(boleto.getDataVencimento()), false);
         addCell(table, "Valor:", "R$ " + boleto.getValor(), false);
         addCell(table, "N° Documento:", boleto.getNumeroDocumento(), false);
         addCell(table, "Nosso Número:", boleto.getNossoNumero(), false);
-
-
         addCell(table, "Agência/Código Beneficiário:",
                 boleto.getAgencia() + "/" + boleto.getContaCorrente(), false);
 
+        // Beneficiário
+        addCell(table, "Beneficiário:", boleto.getBeneficiario().getNome(), true);
+        addCell(table, "CPF/CNPJ:", boleto.getBeneficiario().getDocumento(), false);
+        addCell(table, "Endereço:", boleto.getBeneficiario().getEndereco(), false);
+
+        // Sacado
+        addCell(table, "Sacado:", boleto.getSacado().getNome(), true);
+        addCell(table, "CPF/CNPJ:", boleto.getSacado().getDocumento(), false);
+        addCell(table, "Endereço:", boleto.getSacado().getEndereco(), false);
+
         document.add(table);
 
+        // Linha digitável formatada
+        Paragraph linhaDigitavel = new Paragraph("Linha Digitável: " + formatarLinhaDigitavel(boleto.getLinhaDigitavel()), FONT_NORMAL);
+        document.add(linhaDigitavel);
+
+        //Código de Barras
         Paragraph codigo = new Paragraph("Código de Barras: " + boleto.getCodigoBarras(), FONT_NORMAL);
         document.add(codigo);
         document.close();
+    }
+
+    private static String getNomeBanco(String codigoBanco) {
+        switch (codigoBanco) {
+            case "001":
+                return "Banco do Brasil";
+            case "341":
+                return "Itaú";
+            case "237":
+                return "Bradesco";
+            default:
+                return "Banco Desconhecido";
+        }
+    }
+
+    private static String formatarLinhaDigitavel(String linha) {
+        return linha.substring(0, 5) + "." + linha.substring(5, 10) + " " +
+                linha.substring(10, 16) + "." + linha.substring(16, 22) + " " +
+                linha.substring(22, 28) + "." + linha.substring(28, 34) + " " +
+                linha.substring(34, 36) + " " + linha.substring(36);
     }
 
     private static void addCell(PdfPTable table, String label, String value, boolean bold) {

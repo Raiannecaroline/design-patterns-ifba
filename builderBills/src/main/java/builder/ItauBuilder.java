@@ -1,9 +1,11 @@
 package builder;
 
-public class BancoBrasilBuilder extends BaseBoletoBuilder {
+import util.Modulo10;
 
-    public BancoBrasilBuilder() {
-        super("001");
+public class ItauBuilder extends BaseBoletoBuilder {
+
+    public ItauBuilder() {
+        super("341");
     }
 
     @Override
@@ -22,9 +24,9 @@ public class BancoBrasilBuilder extends BaseBoletoBuilder {
 
         String carteiraLimpa = boleto.getCarteira().replaceAll("[^0-9]", "");
 
-        if (carteiraLimpa.length() != 2) {
+        if (carteiraLimpa.length() != 3) {
             throw new IllegalArgumentException
-                    ("Carteira deve conter exatamente 2 digitos númericos: " + boleto.getCarteira());
+                    ("Carteira deve conter exatamente 3 digitos númericos: " + boleto.getCarteira());
         }
 
         boleto.setCarteira(carteiraLimpa);
@@ -36,19 +38,19 @@ public class BancoBrasilBuilder extends BaseBoletoBuilder {
 
     @Override
     protected String gerarCampoLivre() {
-        String carteira = formatarNumero(boleto.getCarteira(), 2);
-        String nossoNumero = formatarNumero(boleto.getNossoNumero(), 11);
+        String carteira = formatarNumero(boleto.getCarteira(), 3);
+        String nossoNumero = formatarNumero(boleto.getNossoNumero(), 8);
         String agencia = formatarNumero(boleto.getAgencia(), 4);
-        String conta = formatarNumero(boleto.getContaCorrente(), 7);
-        String dac = "0"; // DAC padrão para Banco do Brasil
+        String conta = formatarNumero(boleto.getContaCorrente(), 5);
 
-        return carteira + nossoNumero + agencia + conta + dac;
+        String dacNossoNumero = String.valueOf(Modulo10.calcular(carteira + nossoNumero));
+        String dacAgenciaConta = String.valueOf(Modulo10.calcular(agencia + conta));
+
+        return carteira + nossoNumero + dacNossoNumero + agencia + conta + dacAgenciaConta + "000";
     }
 
     private String formatarNumero(String valor, int tamanho) {
         String apenasDigitos = valor.replaceAll("[^0-9]", "");
         return String.format("%" + tamanho + "s", apenasDigitos).replace(' ', '0');
     }
-
-
 }

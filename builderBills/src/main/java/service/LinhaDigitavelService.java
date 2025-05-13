@@ -1,16 +1,13 @@
 package service;
 
-import model.Boleto;
 import util.Modulo10;
 
-public class BancoBrasilLinhaDigitavel {
+public class LinhaDigitavelService {
 
     public static String gerarLinhaDigitavel(String codigoBarras) {
         if (codigoBarras == null || codigoBarras.length() != 44) {
             throw new IllegalArgumentException("Código de Barras Inválido");
         }
-
-        StringBuilder linhaDigitavel = new StringBuilder();
 
         String campo1 = codigoBarras.substring(0, 3) + codigoBarras.substring(19, 24);
         String campo2 = codigoBarras.substring(24, 34);
