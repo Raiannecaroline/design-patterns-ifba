@@ -43,4 +43,4 @@ Este repositório é licenciado sob a [MIT License](LICENSE). Sinta-se à vontad
 
 ---
 
-Caso queira adicionar mais detalhes específicos sobre o conteúdo da pasta `builderBills`, posso ajudar a expandir a documentação!
+### Caso queira verificar o conteúdo da pasta `builderBills`, a documentação original do projeto com o vídeo de explicação está lá
